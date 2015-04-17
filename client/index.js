@@ -2,20 +2,69 @@
 
 'use strict';
 
-var root, characters, myKey;
+var root, characters, myKey, myCharacter, items;
+var move = '/assets/move.wav';
+var $sound;
 
 $(document).ready(init);
 
 function init(){
   root = new Firebase('https://zelda-chyld.firebaseio.com/');
   characters = root.child('characters');
+  items = root.child('items');
   $('#create-user').click(createUser);
   $('#login-user').click(loginUser);
   $('#logout-user').click(logoutUser);
   $('#start-user').click(startUser);
   characters.on('child_added', characterAdded);
+  items.on('child_added', itemAdded);
   characters.on('child_changed', characterChanged);
   $('#create-character').click(createCharacter);
+  $(document).keydown(keyDown);
+  $sound = $('#sound');
+  startTimer();
+}
+
+function itemAdded(snapshot){
+  var item = snapshot.val();
+  console.log('item', item);
+}
+
+function startTimer(){
+  //setInterval(dropItems, 1000);
+}
+
+function dropItems(){
+  var names = ['health', 'weapon', 'blackhole'];
+  var rnd = Math.floor(Math.random() * names.length);
+  var name = names[rnd];
+  items.push({
+    name: name,
+    sound: '/assets/' + name + '.wav'
+  });
+}
+
+function keyDown(event){
+  $sound.attr('src', move);
+  $sound[0].play();
+
+  var x = $('.' + myCharacter.handle).data('x');
+  var y = $('.' + myCharacter.handle).data('y');
+  switch(event.keyCode){
+    case 37:
+      x -= 1;
+      break;
+    case 38:
+      y -= 1;
+      break;
+    case 39:
+      x += 1;
+      break;
+    case 40:
+      y += 1;
+  }
+  characters.child(myKey).update({x:x, y:y});
+  event.preventDefault();
 }
 
 function characterChanged(snapshot){
@@ -46,6 +95,7 @@ function characterAdded(snapshot){
 
   if(myUid === character.uid){
     myKey = snapshot.key();
+    myCharacter = character;
     active = 'active';
   }
 
