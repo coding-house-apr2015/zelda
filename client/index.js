@@ -2,7 +2,7 @@
 
 'use strict';
 
-var root, characters;
+var root, characters, myKey;
 
 $(document).ready(init);
 
@@ -12,8 +12,19 @@ function init(){
   $('#create-user').click(createUser);
   $('#login-user').click(loginUser);
   $('#logout-user').click(logoutUser);
+  $('#start-user').click(startUser);
   characters.on('child_added', characterAdded);
+  characters.on('child_changed', characterChanged);
   $('#create-character').click(createCharacter);
+}
+
+function characterChanged(snapshot){
+  var character = snapshot.val();
+  var $td = $('#board td[data-x="'+character.x+'"][data-y="'+character.y+'"]');
+  $('#board > tbody td.' + character.handle).css('background-image', '');
+  $('#board > tbody td').removeClass(character.handle);
+  $td.addClass(character.handle);
+  $td.css('background-image', 'url("'+character.avatar+'")');
 }
 
 function createCharacter(){
@@ -34,6 +45,7 @@ function characterAdded(snapshot){
   var active = '';
 
   if(myUid === character.uid){
+    myKey = snapshot.key();
     active = 'active';
   }
 
@@ -43,6 +55,7 @@ function characterAdded(snapshot){
 
 function logoutUser(){
   root.unauth();
+  myKey = null;
   $('#characters > tbody > tr.active').removeClass('active');
 }
 
@@ -62,9 +75,15 @@ function loginUser(){
   });
 }
 
+function startUser(){
+  var x = Math.floor(Math.random() * 10);
+  var y = Math.floor(Math.random() * 10);
+  characters.child(myKey).update({x:x, y:y});
+}
+
 function redrawCharacters(){
   $('#characters > tbody').empty();
-  characters.off('child_added');
+  characters.off('child_added', characterAdded);
   characters.on('child_added', characterAdded);
 }
 

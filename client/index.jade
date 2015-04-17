@@ -14,6 +14,7 @@ html
       button#create-user Create User
       button#login-user Login User
       button#logout-user Logout User
+      button#start-user Start User
 
     #character-creation
       input#handle(type='text', placeholder='handle')
@@ -22,6 +23,14 @@ html
 
     table#characters
       tbody
+
+
+    table#board
+      tbody
+        - for(var y = 0; y < 10; y++)
+          tr
+            - for(var x = 0; x < 10; x++)
+              td(data-x=x, data-y=y)
 
     script(src='/vendor/firebase/firebase.js')
     script(src='/vendor/jquery/dist/jquery.min.js')
