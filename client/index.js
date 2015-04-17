@@ -11,6 +11,7 @@ function init(){
   characters = root.child('characters');
   $('#create-user').click(createUser);
   $('#login-user').click(loginUser);
+  $('#logout-user').click(logoutUser);
   characters.on('child_added', characterAdded);
   $('#create-character').click(createCharacter);
 }
@@ -29,7 +30,7 @@ function createCharacter(){
 
 function characterAdded(snapshot){
   var character = snapshot.val();
-  var myUid = root.getAuth().uid;
+  var myUid = root.getAuth() ? root.getAuth().uid : '';
   var active = '';
 
   if(myUid === character.uid){
@@ -38,6 +39,11 @@ function characterAdded(snapshot){
 
   var tr = '<tr class="'+active+'"><td>'+character.handle+'</td><td><img src="'+character.avatar+'"></td></tr>';
   $('#characters > tbody').append(tr);
+}
+
+function logoutUser(){
+  root.unauth();
+  $('#characters > tbody > tr.active').removeClass('active');
 }
 
 function loginUser(){
@@ -50,8 +56,16 @@ function loginUser(){
   }, function(error){
     if(error){
       console.log('Error logging in:', error);
+    }else{
+      redrawCharacters();
     }
   });
+}
+
+function redrawCharacters(){
+  $('#characters > tbody').empty();
+  characters.off('child_added');
+  characters.on('child_added', characterAdded);
 }
 
 function createUser(){
